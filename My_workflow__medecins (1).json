@@ -1,0 +1,235 @@
+{
+  "name": "My workflow  medecins",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "medecins",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "08ff9754-3e7d-4b93-b089-d5fbd334f1a8",
+      "name": "Webhook",
+      "webhookId": "f7e7fc42-23f9-41e6-a8a0-3f370408d75a"
+    },
+    {
+      "parameters": {
+        "operation": "createFromText",
+        "content": "=nom: {{ $json.body.nom }}\nprenom: {{ $json.body.prenom }}\nadresse: {{ $json.body.adresse }}\nville: {{ $json.body.ville}}\ntelephone: {{ $json.body.telephone }}\nhonoraires: {{ $json.body.honoraires }}\nsecteur: {{ $json.body.specialite }}\nspecialité: {{ $json.body.secteur }}",
+        "name": "=fiche_dr_{{ $json.body.nom }}_{{ $json.body.prenom }}.txt\n",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        220,
+        0
+      ],
+      "id": "b1b92990-42ad-4f77-a761-89497d6190be",
+      "name": "Google Drive",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "txzOP4W2QO6LrZSs",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "share",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $node[\"Google Drive\"].json[\"id\"] }}",
+          "mode": "id"
+        },
+        "permissionsUi": {
+          "permissionsValues": {
+            "role": "reader",
+            "type": "user",
+            "emailAddress": "candidature@digiconseil.fr"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        400,
+        0
+      ],
+      "id": "011b85f9-f49a-48e9-a0b3-ea91565a9753",
+      "name": "Google Drive1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "txzOP4W2QO6LrZSs",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message",
+          "edited_message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        780,
+        0
+      ],
+      "id": "a123e05a-0c54-48ef-a66e-a5eefcb82e14",
+      "name": "Telegram Trigger",
+      "webhookId": "0ca3c0d3-b53f-444c-b598-b8a463e7b0d8",
+      "credentials": {
+        "telegramApi": {
+          "id": "NME5dDDxdIAPCJMk",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node[\"Telegram Trigger\"].json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "=Bonjour 👋 Merci pour votre message ! Voici votre fiche : https://drive.google.com/file/d/{{ $node[\"Telegram Trigger\"].json[\"id\"] }}/view\n",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1000,
+        0
+      ],
+      "id": "e989a6d6-c5d5-4488-9538-dbcea43d0f5c",
+      "name": "Telegram",
+      "webhookId": "339c67f7-d94a-4e93-8597-0dfeb8ce2663",
+      "credentials": {
+        "telegramApi": {
+          "id": "NME5dDDxdIAPCJMk",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "file",
+        "operation": "list",
+        "owner": {
+          "__rl": true,
+          "value": "saratambe",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "N8N",
+          "mode": "list",
+          "cachedResultName": "N8N",
+          "cachedResultUrl": "https://github.com/saratambe/N8N"
+        }
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        620,
+        0
+      ],
+      "id": "66751333-6cfb-441e-a9c9-1668634cc1ed",
+      "name": "GitHub1",
+      "webhookId": "660fc2d7-d643-4b78-8ec4-b954da3956cf",
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "yAIVO6VgfBWcQlcn",
+          "name": "GitHub account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Google Drive1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive1": {
+      "main": [
+        [
+          {
+            "node": "GitHub1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram": {
+      "main": [
+        []
+      ]
+    },
+    "GitHub1": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "703cadd3-3139-46b2-9407-07c71906386f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "adcf598a6507963fd72fc9b38feaff08e05f320e4ae631dee7baf4ba1a33792a"
+  },
+  "id": "uPUb9pDrvuHpYoAs",
+  "tags": []
+}
